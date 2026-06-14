@@ -1,0 +1,6 @@
+<launch>
+    <include file="$(find vs_robot_manager)/launch/test_robot_manager.launch" />
+
+    <include file="$(find vs_user_input)/launch/vs_experiment_start.launch" />
+    
+    </launch>

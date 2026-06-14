@@ -1,0 +1,7 @@
+<library path="lib/libvs_control_nodelet">
+  <class name="vs_control/VsControlNodelet" type="vs_control::VsControlNodelet" base_class_type="nodelet::Nodelet">
+    <description>
+      A nodelet for visual servoing control loop.
+    </description>
+  </class>
+</library>

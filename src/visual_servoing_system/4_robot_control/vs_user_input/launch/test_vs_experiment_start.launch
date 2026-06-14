@@ -1,0 +1,76 @@
+<launch>
+    <arg name="algo_type" default="defocused" />
+    <arg name="camera_frame_name" value="basler_camera_optical_frame" if="$(eval arg('algo_type') == 'defocused')" />
+    <arg name="camera_frame_name" value="camera_color_optical_frame"  unless="$(eval arg('algo_type') == 'defocused')" /> 
+    
+    <arg name="base_frame_name"   default="base" />                
+    <arg name="tool_frame_name"   default="tool0" />                    
+    <arg name="group_name"        default="manipulator" />
+
+    <node pkg="nodelet" type="nodelet" name="vs_nodelet_manager" args="manager" output="screen" />
+
+    <node pkg="nodelet" type="nodelet" name="l515_driver" 
+          args="load vs_publish_image_L515/L515Nodelet vs_nodelet_manager">
+        <rosparam command="load" file="$(find vs_publish_image_L515)/config/vs_l515_params.yaml" />
+    </node>
+
+    <group if="$(eval arg('algo_type') == 'defocused')">
+        <node pkg="pylon_camera" type="pylon_camera_node" name="basler_camera" output="screen">
+            <rosparam command="load" file="$(find vs_publish_image_basler)/config/basler_params.yaml" />
+        </node>
+    </group>
+
+    <group unless="$(eval arg('algo_type') == 'defocused')">
+        <node pkg="nodelet" type="nodelet" name="dvs_processor" 
+              args="load vs_dvs_processor/DvsProcessorNodelet vs_nodelet_manager" output="screen">
+            <rosparam command="load" file="$(find vs_dvs_processor)/config/test_vs_processor_params.yaml" />
+            <param name="desired_rgb_path" value="$(find vs_dvs_processor)/data/current_desired.png" />
+            <param name="desired_depth_path" value="$(find vs_dvs_processor)/data/current_desired_depth.png" />
+            <param name="camera_type" value="l515" />
+        </node>
+    </group>
+
+    <group if="$(eval arg('algo_type') == 'defocused')">
+        <node pkg="nodelet" type="nodelet" name="basler_processor" 
+              args="load vs_dvs_processor/BaslerProcessorNodelet vs_nodelet_manager" output="screen">
+            <param name="target_width" value="640" />
+            <param name="target_height" value="480" />
+            <param name="desired_rgb_path" value="$(find vs_dvs_processor)/data/current_desired.png" />
+            <param name="desired_depth_path" value="$(find vs_dvs_processor)/data/current_desired_depth.png" />
+        </node>
+    </group>
+    
+    <node pkg="nodelet" type="nodelet" name="vs_controller" 
+          args="load vs_control/VsControlNodelet vs_nodelet_manager">
+        
+        <rosparam command="load" file="$(find vs_control)/config/vs_control_params.yaml" />
+        <param name="algorithm_type" value="$(arg algo_type)" />
+
+        <rosparam command="load" file="$(find vs_control)/config/basler_intrinsics.yaml" if="$(eval arg('algo_type') == 'defocused')" />
+        <rosparam command="load" file="$(find vs_control)/config/l515_intrinsics.yaml" unless="$(eval arg('algo_type') == 'defocused')" />
+        
+    </node>
+    
+    <node pkg="vs_velocity_bridge" type="bridge_node" name="velocity_bridge" output="screen">
+        <param name="camera_frame" value="$(arg camera_frame_name)" />
+        <param name="base_frame"   value="$(arg base_frame_name)" />
+        <param name="tool_frame"   value="$(arg tool_frame_name)" />
+        <param name="max_linear_vel"  value="0.05"/>  
+        <param name="max_angular_vel" value="0.1"/>  
+        <param name="max_linear_acc"  value="0.2"/>   
+        <param name="max_angular_acc" value="0.5"/>   
+        
+        <remap from="/twist_controller/command" to="/virtual_twist_cmd" />
+    </node>
+    
+    <node pkg="vs_robot_manager" type="robot_manager_node.py" name="vs_manager" output="screen">
+        <param name="group_name" value="$(arg group_name)"/>
+    </node>
+
+    <node pkg="vs_user_input" type="keyboard_teleop.py" name="vs_keyboard" 
+          output="screen" launch-prefix="xterm -e" />
+    <node pkg="vs_user_input" type="visualizer.py" name="vs_visualizer" />
+    
+    <node pkg="rostopic" type="rostopic" name="safe_watcher" 
+          args="echo /virtual_twist_cmd" launch-prefix="xterm -e" />
+</launch>

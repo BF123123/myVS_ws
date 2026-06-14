@@ -1,0 +1,30 @@
+<!-- test_bridge.launch -->
+<!-- 测试用 -->
+<!-- 一键测试视觉伺服速度桥接节点，自动发布固定相机速度，并监听末端执行器速度/twist_controller/command -->
+<!-- 终端显示速度则表示桥接成功 -->
+
+<launch>
+    <node pkg="tf" type="static_transform_publisher" name="fake_base_to_tool" 
+          args="0 0 0.5 0 0 0 base_link tool0_controller 100" />
+          
+    <node pkg="tf" type="static_transform_publisher" name="fake_tool_to_camera" 
+          args="0 0 0.1 0 0 0 tool0_controller camera_color_frame 100" />
+
+    <node pkg="vs_velocity_bridge" type="bridge_node" name="velocity_bridge" output="screen">
+        <param name="camera_frame" value="camera_color_optical_frame" />
+        <param name="tool_frame" value="tool0" />
+        <param name="base_frame" value="base_link" />
+    </node>
+
+    <node pkg="rosservice" type="rosservice" name="auto_enabler" 
+          args="call --wait /vs_bridge/enable 'data: true'" output="screen" />
+
+    <node pkg="rostopic" type="rostopic" name="auto_publisher" 
+          args="pub -r 10 /vs/camera_velocity_raw geometry_msgs/Twist 
+          '{linear: {x: 0, y: 0, z: 0}, angular: {x: 0, y: 1.0, z: 0}}'" />
+
+    <node pkg="rostopic" type="rostopic" name="result_monitor" 
+          args="echo /twist_controller/command"
+          launch-prefix="xterm -e" />
+
+</launch>

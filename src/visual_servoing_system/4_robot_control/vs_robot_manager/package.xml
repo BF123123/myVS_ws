@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>vs_robot_manager</name>
+  <version>0.0.0</version>
+  <description>The manager node for visual servoing experiments</description>
+  <maintainer email="bf@todo.todo">bf</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>rospy</depend>
+  <depend>std_srvs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>moveit_commander</depend> 
+  <depend>vs_velocity_bridge</depend>
+</package>

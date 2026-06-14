@@ -1,0 +1,26 @@
+<launch>
+    <arg name="manager_name" default="vs_nodelet_manager" />
+    
+    <node pkg="nodelet" type="nodelet" name="$(arg manager_name)" args="manager" output="screen" />
+
+    <node pkg="nodelet" type="nodelet" name="l515_driver" 
+          args="load vs_publish_image_L515/L515Nodelet $(arg manager_name)" 
+          output="screen">
+        <param name="fps" value="30"/>
+        </node>
+
+    <node pkg="nodelet" type="nodelet" name="depth_processor" 
+          args="load vs_dvs_processor/DepthProcessorNodelet $(arg manager_name)" 
+          output="screen">
+        
+        <param name="use_gaussian_blur" value="true" />
+        <param name="gaussian_kernel_size" value="7" /> <param name="gaussian_sigma" value="1.5" />
+        
+        <param name="visualize_scale" value="800.0" /> 
+    </node>
+
+    <node pkg="rviz" type="rviz" name="rviz" />
+    
+    <node pkg="rqt_image_view" type="rqt_image_view" name="debug_view" />
+
+</launch>

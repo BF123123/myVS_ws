@@ -1,0 +1,33 @@
+# vs_processor_params.yaml
+
+# =========================================
+# 1. 运行模式设置
+# =========================================
+# 是否使用实时深度图
+# true:  方案B (RGB + 实时深度同步)，订阅 /camera/aligned_depth_to_color/image_raw
+# false: 方案A (仅 RGB)，深度信息完全依赖初始加载的期望深度图 (静态假设)
+primary_camera: basler       # 选项: basler 或 l515
+depth_strategy: constant     # 选项: realtime, constant, desired_only
+# =========================================
+# 2. 图像预处理参数
+# =========================================
+# 是否启用高斯模糊 (DVS 算法通常需要平滑梯度)
+use_gaussian_blur: true
+  
+# 高斯核大小 (必须为奇数，如 3, 5, 7)
+gaussian_kernel_size: 5
+
+# 高斯标准差
+gaussian_sigma: 1.0
+
+# 是否启用直方图均衡化 (用于增强对比度，应对光照变化)
+use_histogram_eq: false
+
+# =========================================
+# 3. 期望图像路径 (必须设置)
+# =========================================
+# 期望 RGB 图像的绝对路径
+desired_rgb_path: ""  # 例如: "$(find vs_dvs_processor)/data/image_rgb_init.png"
+
+# 期望深度图像的绝对路径 (16位原始深度图)
+desired_depth_path: "" # 例如: "$(find vs_dvs_processor)/data/image_depth_init.png"

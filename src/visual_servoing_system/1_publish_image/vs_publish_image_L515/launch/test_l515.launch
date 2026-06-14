@@ -1,0 +1,16 @@
+<launch>
+    <arg name="manager_name" default="vs_nodelet_manager" />
+
+    <node pkg="nodelet" type="nodelet" name="$(arg manager_name)" args="manager" output="screen" />
+
+    <node pkg="nodelet" type="nodelet" name="l515_driver" 
+          args="load vs_publish_image_L515/L515Nodelet $(arg manager_name)" 
+          output="screen">
+        
+        <rosparam command="load" file="$(find vs_publish_image_L515)/config/vs_l515_params.yaml" />
+    </node>
+
+    <node pkg="rviz" type="rviz" name="rviz" 
+          args="-d $(find vs_publish_image_L515)/rviz/test_publish_image_L515.rviz" />
+
+</launch>

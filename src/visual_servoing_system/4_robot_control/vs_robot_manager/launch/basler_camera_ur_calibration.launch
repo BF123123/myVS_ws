@@ -1,0 +1,7 @@
+<launch>
+  <!-- The rpy in the comment uses the extrinsic XYZ convention, which is the same as is used in a URDF. See
+       http://wiki.ros.org/geometry2/RotationMethods and https://en.wikipedia.org/wiki/Euler_angles for more info. -->
+  <!-- xyz="0.0370328 -0.0313791 0.0714573" rpy="0.0341984 -0.0191462 -2.35306" -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="basler_tf_broadcaster"
+      args="-0.0364983 0.0439929 0.121173   0.00604097 -0.00423376 -0.386351 0.922323 tool0 basler_camera_optical_frame" />
+</launch>

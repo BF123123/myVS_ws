@@ -1,0 +1,12 @@
+# vs_publish_image_basler/config/basler_params.yaml
+
+camera_frame: "basler_camera_optical_frame"
+image_encoding: "mono8"
+frame_rate: 30.0
+
+exposure_auto: false
+exposure: 10000.0  # 填入你测试好的固定曝光时间
+gain_auto: false
+gain: 0.0
+
+camera_info_url: "package://vs_publish_image_basler/config/basler_camera_info.yaml"

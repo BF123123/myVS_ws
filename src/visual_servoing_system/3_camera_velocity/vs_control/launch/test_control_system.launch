@@ -1,0 +1,40 @@
+<launch>
+    <arg name="algo_name" default="dvs" />
+    <arg name="manager_name" default="vs_nodelet_manager" />
+
+    <node pkg="tf" type="static_transform_publisher" name="fake_base_to_tool" 
+          args="0 0 0.5 0 0 0 base_link tool0_controller 100" />
+    <node pkg="tf" type="static_transform_publisher" name="fake_tool_to_camera" 
+          args="0 0 0.1 0 0 0 tool0_controller camera_color_frame 100" />
+
+    <node pkg="nodelet" type="nodelet" name="$(arg manager_name)" args="manager" output="screen" />
+
+    <node pkg="nodelet" type="nodelet" name="l515_driver" 
+          args="load vs_publish_image_L515/L515Nodelet $(arg manager_name)" output="screen">
+        <rosparam command="load" file="$(find vs_publish_image_L515)/config/vs_l515_params.yaml" />
+    </node>
+
+    <node pkg="nodelet" type="nodelet" name="dvs_processor" 
+          args="load vs_dvs_processor/DvsProcessorNodelet $(arg manager_name)" output="screen">
+        <rosparam command="load" file="$(find vs_dvs_processor)/config/test_vs_processor_params.yaml" />
+        <param name="desired_rgb_path" value="$(find vs_dvs_processor)/data/image_rgb_init.png" />
+        <param name="desired_depth_path" value="$(find vs_dvs_processor)/data/image_depth_init.png" />
+    </node>
+
+    <node pkg="nodelet" type="nodelet" name="vs_controller" 
+          args="load vs_control/VsControlNodelet $(arg manager_name)" output="screen">
+        
+        <rosparam command="load" file="$(find vs_control)/config/test_vs_control_params.yaml" />
+        <param name="algorithm_type" value="$(arg algo_name)" />
+        
+        </node>
+
+    <node pkg="rqt_image_view" type="rqt_image_view" name="image_view" />
+
+    <node pkg="rosservice" type="rosservice" name="auto_start_vs" 
+          args="call --wait /vs/enable_control 'data: true'" />
+
+    <node pkg="rostopic" type="rostopic" name="echo_velocity" 
+          args="echo /vs/camera_velocity_raw" output="screen" />
+
+</launch>

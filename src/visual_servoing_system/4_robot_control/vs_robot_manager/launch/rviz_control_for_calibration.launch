@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<launch>
+    <include file="$(dirname)/basler_camera_ur_calibration.launch" />
+
+<launch>
+    <include file="$(find ur_robot_driver)/launch/ur5_bringup.launch">
+        <arg name="robot_ip" value="192.168.10.102" /> 
+        <arg name="limited" value="true" />
+        <arg name="controllers" value="joint_state_controller pos_joint_traj_controller speed_scaling_state_controller force_torque_sensor_controller"/>
+        <arg name="stopped_controllers" value="joint_group_vel_controller twist_controller"/>
+    </include>
+    </launch>
+
+    <include file="$(find ur5_moveit_config)/launch/move_group.launch" />
+
+    </launch>

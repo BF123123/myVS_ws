@@ -1,0 +1,8 @@
+<launch>
+    <!-- <include file="$(find vs_dvs_processor)/launch/test_processor.launch" /> -->
+    <include file="$(find vs_dvs_processor)/launch/test_processor.launch" />
+    <node pkg="vs_user_input" type="visualizer.py" name="vs_dashboard" output="screen" />
+
+    <node pkg="vs_user_input" type="keyboard_teleop.py" name="vs_keyboard" 
+          output="screen" launch-prefix="xterm -e" />
+</launch>

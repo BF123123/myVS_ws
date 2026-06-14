@@ -1,0 +1,18 @@
+<!-- bridge_debug.launch -->
+<!-- 测试用 -->
+<!-- 一键启动速度桥接节点，发布测试坐标变换，测试vs_user_input用 -->
+
+<launch>
+    <node pkg="tf" type="static_transform_publisher" name="fake_base_to_tool" 
+          args="0 0 0.5 0 0 0 base_link tool0_controller 100" />
+          
+    <node pkg="tf" type="static_transform_publisher" name="fake_tool_to_camera" 
+          args="0 0 0.1 0 0 0 tool0_controller camera_color_frame 100" />
+
+    <node pkg="vs_velocity_bridge" type="bridge_node" name="velocity_bridge" output="screen">
+        <param name="camera_frame" value="camera_color_frame" />
+        <param name="tool_frame" value="tool0_controller" />
+        <param name="base_frame" value="base_link" />
+    </node>
+    
+    </launch>

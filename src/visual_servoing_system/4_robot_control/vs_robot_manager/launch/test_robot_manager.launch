@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<launch>
+
+<include file="$(dirname)/basler_camera_ur_calibration.launch" />
+<include file="$(dirname)/l515_camera_ur_calibration.launch" />
+<include file="$(find ur5_moveit_config)/launch/move_group.launch"/>
+
+<include file="$(find cartesian_controllers_ur_robots)/launch/ur5_robot.launch" />
+<!-- <include file="$(dirname)/ur_demo.launch" />  -->
+
+</launch>

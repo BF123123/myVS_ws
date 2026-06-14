@@ -1,0 +1,2 @@
+roslaunch vs_robot_manager test_robot_manager.launch
+roslaunch vs_user_input vs_experiment_start.launch

@@ -1,0 +1,49 @@
+<launch>
+    <arg name="base_frame_name"   default="base" />                
+    <arg name="camera_frame_name" default="camera_color_optical_frame" /> 
+    <arg name="tool_frame_name"   default="tool0" />                    
+    <arg name="group_name"        default="manipulator" />
+
+    <node pkg="nodelet" type="nodelet" name="vs_nodelet_manager" args="manager" output="screen" />
+
+    <node pkg="nodelet" type="nodelet" name="l515_driver" 
+          args="load vs_publish_image_L515/L515Nodelet vs_nodelet_manager">
+        <rosparam command="load" file="$(find vs_publish_image_L515)/config/vs_l515_params.yaml" />
+    </node>
+
+    <node pkg="nodelet" type="nodelet" name="dvs_processor" 
+          args="load vs_dvs_processor/DvsProcessorNodelet vs_nodelet_manager" output="screen">
+        <rosparam command="load" file="$(find vs_dvs_processor)/config/test_vs_processor_params.yaml" />
+        <param name="desired_rgb_path" value="$(find vs_dvs_processor)/data/current_desired.png" />
+        <param name="desired_depth_path" value="$(find vs_dvs_processor)/data/current_desired_depth.png" />
+    </node>
+
+    <node pkg="nodelet" type="nodelet" name="vs_controller" 
+          args="load vs_control/VsControlNodelet vs_nodelet_manager">
+        <rosparam command="load" file="$(find vs_control)/config/vs_control_params.yaml" />
+    </node>
+
+    <node pkg="vs_velocity_bridge" type="bridge_node" name="velocity_bridge" output="screen">
+        <param name="camera_frame" value="$(arg camera_frame_name)" />
+        <param name="base_frame"   value="$(arg base_frame_name)" />
+        <param name="tool_frame"   value="$(arg tool_frame_name)" />
+        
+        <param name="max_linear_vel"  value="0.05"/>  
+        <param name="max_angular_vel" value="0.1"/>   
+        <param name="max_linear_acc"  value="0.2"/>   
+        <param name="max_angular_acc" value="0.5"/>   
+        <remap from="/twist_controller/command" to="/debug/safe_command" />
+    </node>
+    <node pkg="vs_robot_manager" type="robot_manager_node.py" name="vs_manager" output="screen">
+        <param name="group_name" value="$(arg group_name)"/>
+    </node>
+
+    <node pkg="vs_user_input" type="keyboard_teleop.py" name="vs_keyboard" 
+          output="screen" launch-prefix="xterm -e" />
+    
+    <node pkg="vs_user_input" type="visualizer.py" name="vs_visualizer" />
+    
+    <node pkg="rostopic" type="rostopic" name="safe_watcher" 
+          args="echo /debug/safe_command" launch-prefix="xterm -e" />
+
+</launch>

@@ -1,0 +1,26 @@
+<launch>
+    <arg name="manager_name" default="vs_nodelet_manager" />
+    
+    <node pkg="nodelet" type="nodelet" name="$(arg manager_name)" args="manager" output="screen" />
+
+    <node pkg="nodelet" type="nodelet" name="l515_driver" 
+          args="load vs_publish_image_L515/L515Nodelet $(arg manager_name)" 
+          output="screen">
+        <param name="fps" value="30"/>
+    </node>
+
+    <node pkg="nodelet" type="nodelet" name="dvs_processor" 
+          args="load vs_dvs_processor/DvsProcessorNodelet $(arg manager_name)" 
+          output="screen">
+        
+        <rosparam command="load" file="$(find vs_dvs_processor)/config/test_vs_processor_params.yaml" />
+
+        <param name="desired_rgb_path" value="$(find vs_dvs_processor)/data/current_desired.png" />
+        <param name="desired_depth_path" value="$(find vs_dvs_processor)/data/current_desired_depth.png" />
+        
+    </node>
+
+    <node pkg="rqt_image_view" type="rqt_image_view" name="image_view" />
+    <node pkg="rqt_graph" type="rqt_graph" name="graph_view" />
+
+</launch>

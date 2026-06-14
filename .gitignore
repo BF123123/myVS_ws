@@ -1,0 +1,17 @@
+cat << 'EOF' > .gitignore
+# ROS workspaces
+build/
+devel/
+install/
+logs/
+.catkin_workspace
+
+# Third-party hardware drivers
+src/hardware_drivers/
+
+# Python and Temp files
+*.pyc
+__pycache__/
+.vscode/
+*~
+EOF

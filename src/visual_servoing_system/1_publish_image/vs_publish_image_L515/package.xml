@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>vs_publish_image_L515</name>
+  <version>0.0.0</version>
+  <description>The vs_publish_image_L515 package for Realsense Nodelet</description>
+
+  <maintainer email="user@todo.todo">user</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>roscpp</depend>
+  <depend>nodelet</depend>
+  <depend>image_transport</depend>
+  <depend>sensor_msgs</depend>
+  <depend>cv_bridge</depend>
+  
+  <export>
+    <nodelet plugin="${prefix}/nodelet_plugins.xml" />
+  </export>
+  
+</package>

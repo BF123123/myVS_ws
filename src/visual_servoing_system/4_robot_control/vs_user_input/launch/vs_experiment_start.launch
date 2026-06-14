@@ -1,0 +1,86 @@
+<launch>
+    <arg name="primary_camera" default="basler" doc="Options: basler, l515" />
+    <arg name="depth_strategy" default="constant" doc="Options: constant, realtime, desired_only" />
+    <arg name="algo_type"      default="defocused_RAL" doc="Options: defocused, dvs, depth" />
+
+    <arg name="camera_frame_name" value="basler_camera_optical_frame" if="$(eval arg('primary_camera') == 'basler')" />
+    <arg name="camera_frame_name" value="l515_camera_color_optical_frame"  if="$(eval arg('primary_camera') == 'l515')" /> 
+    
+    <arg name="base_frame_name"   default="base" />                
+    <arg name="tool_frame_name"   default="tool0" />                    
+    <arg name="group_name"        default="manipulator" />
+
+    <node pkg="nodelet" type="nodelet" name="vs_nodelet_manager" args="manager" output="screen" />
+
+
+    <group if="$(eval arg('primary_camera') == 'l515' or arg('depth_strategy') == 'realtime')">
+        <node pkg="nodelet" type="nodelet" name="l515_driver" 
+              args="load vs_publish_image_L515/L515Nodelet vs_nodelet_manager" output="screen">
+            <rosparam command="load" file="$(find vs_publish_image_L515)/config/vs_l515_params.yaml" />
+        </node>
+    </group>
+
+    <group if="$(eval arg('primary_camera') == 'basler')">
+        <node pkg="pylon_camera" type="pylon_camera_node" name="basler_camera" output="screen">
+            <rosparam command="load" file="$(find vs_publish_image_basler)/config/basler_params.yaml" />
+        </node>
+    </group>
+
+
+    <group if="$(eval arg('primary_camera') == 'l515')">
+        <node pkg="nodelet" type="nodelet" name="dvs_processor" 
+              args="load vs_dvs_processor/DvsProcessorNodelet vs_nodelet_manager" output="screen">
+            <rosparam command="load" file="$(find vs_dvs_processor)/config/test_vs_processor_params.yaml" />
+            
+            <param name="depth_strategy" value="$(arg depth_strategy)" />
+            <param name="primary_camera" value="$(arg primary_camera)" />
+            
+            <param name="desired_rgb_path" value="$(find vs_dvs_processor)/data/current_desired.png" />
+            <param name="desired_depth_path" value="$(find vs_dvs_processor)/data/current_desired_depth.png" />
+        </node>
+    </group>
+
+    <group if="$(eval arg('primary_camera') == 'basler')">
+        <node pkg="nodelet" type="nodelet" name="basler_processor" 
+              args="load vs_dvs_processor/BaslerProcessorNodelet vs_nodelet_manager" output="screen">
+            <param name="target_width" value="640" />
+            <param name="target_height" value="480" />
+            <param name="desired_rgb_path" value="$(find vs_dvs_processor)/data/current_desired.png" />
+            <param name="desired_depth_path" value="$(find vs_dvs_processor)/data/current_desired_depth.png" />
+        </node>
+    </group>
+    
+
+    <node pkg="nodelet" type="nodelet" name="vs_controller" 
+          args="load vs_control/VsControlNodelet vs_nodelet_manager" output="screen">
+        
+        <rosparam command="load" file="$(find vs_control)/config/vs_control_params.yaml" />
+        
+        <param name="primary_camera" value="$(arg primary_camera)" />
+        <param name="depth_strategy" value="$(arg depth_strategy)" />
+        <param name="algorithm_type" value="$(arg algo_type)" />
+
+        <rosparam command="load" file="$(find vs_control)/config/basler_intrinsics.yaml" if="$(eval arg('primary_camera') == 'basler')" />
+        <rosparam command="load" file="$(find vs_control)/config/l515_intrinsics.yaml" if="$(eval arg('primary_camera') == 'l515')" />
+    </node>
+
+
+    <node pkg="vs_velocity_bridge" type="bridge_node" name="velocity_bridge" output="screen">
+        <param name="camera_frame" value="$(arg camera_frame_name)" />
+        <param name="base_frame"   value="$(arg base_frame_name)" />
+        <param name="tool_frame"   value="$(arg tool_frame_name)" />
+        <param name="max_linear_vel"  value="0.05"/>  
+        <param name="max_angular_vel" value="0.1"/>  
+        <param name="max_linear_acc"  value="0.2"/>   
+        <param name="max_angular_acc" value="0.5"/>   
+    </node>
+    
+    <node pkg="vs_robot_manager" type="robot_manager_node.py" name="vs_manager" output="screen">
+        <param name="group_name" value="$(arg group_name)"/>
+    </node>
+
+    <!-- <node pkg="vs_user_input" type="keyboard_teleop.py" name="vs_keyboard" 
+          output="screen" launch-prefix="xterm -e" /> -->
+    <node pkg="vs_user_input" type="gui_teleop.py" name="vs_gui" output="screen" />
+    <node pkg="vs_user_input" type="visualizer.py" name="vs_visualizer" />
+</launch>

@@ -1,0 +1,8 @@
+<launch>
+    <node pkg="pylon_camera" type="pylon_camera_node" name="basler_camera" output="screen">
+        <rosparam command="load" file="$(find vs_publish_image_basler)/config/basler_params.yaml" />
+    </node>
+
+    <node pkg="rqt_image_view" type="rqt_image_view" name="basler_image_view" 
+          args="/basler_camera/image_raw" />
+</launch>

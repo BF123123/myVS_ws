@@ -1,0 +1,34 @@
+<launch>
+    <arg name="marker_size" default="0.10" />
+    <arg name="marker_id" default="582" />
+
+    <node pkg="aruco_ros" type="single" name="aruco_single" output="screen">
+        <remap from="/camera_info" to="/basler_camera/camera_info" />
+        <remap from="/image" to="/basler_camera/image_raw" />
+
+        <param name="image_is_rectified" value="True"/>
+        <param name="marker_size"        value="$(arg marker_size)"/>
+        <param name="marker_id"          value="$(arg marker_id)"/>
+        
+        <param name="reference_frame"    value="basler_camera_optical_frame"/>
+        <param name="camera_frame"       value="basler_camera_optical_frame"/>
+        <param name="marker_frame"       value="aruco_marker_frame" />
+    </node>
+
+    <include file="$(find easy_handeye)/launch/calibrate.launch">
+        <arg name="namespace_prefix" value="basler_ur_calibration" />
+        
+        <arg name="eye_on_hand" value="true" />
+
+        <arg name="robot_base_frame" value="base" />
+        <arg name="robot_effector_frame" value="tool0" />
+
+        <arg name="tracking_base_frame" value="basler_camera_optical_frame" />
+        <arg name="tracking_marker_frame" value="aruco_marker_frame" />
+
+        <arg name="freehand_robot_movement" value="true" />
+        <arg name="publish_dummy_tracking_reference" value="false" />
+        
+        <arg name="start_rviz" value="true" />
+    </include>
+</launch>

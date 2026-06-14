@@ -1,0 +1,9 @@
+<library path="lib/libvs_publish_image_L515"> 
+  <class name="vs_publish_image_L515/L515Nodelet" 
+         type="vs_publish_image_L515::L515Nodelet" 
+         base_class_type="nodelet::Nodelet">
+    <description>
+      Driver nodelet for Intel RealSense L515.
+    </description>
+  </class>
+</library>

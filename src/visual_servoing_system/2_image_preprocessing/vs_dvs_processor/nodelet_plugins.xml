@@ -1,0 +1,27 @@
+<library path="lib/libvs_dvs_processor">
+  <class name="vs_dvs_processor/DvsProcessorNodelet" 
+         type="vs_dvs_processor::DvsProcessorNodelet" 
+         base_class_type="nodelet::Nodelet">
+    <description>
+      Performs grayscale conversion and Gaussian smoothing for DVS.
+    </description>
+  </class>
+
+  <class name="vs_dvs_processor/DepthProcessorNodelet" 
+         type="vs_dvs_processor::DepthProcessorNodelet" 
+         base_class_type="nodelet::Nodelet">
+    <description>
+      Dedicated processor for Pure Depth Visual Servoing (Smoothing & Gradient Vis).
+    </description>
+  </class>
+</library>
+
+<library path="lib/libvs_dvs_processor">
+  <class name="vs_dvs_processor/BaslerProcessorNodelet" 
+         type="vs_dvs_processor::BaslerProcessorNodelet" 
+         base_class_type="nodelet::Nodelet">
+    <description>
+      Processor for Basler camera (Resolution resizing).
+    </description>
+  </class>
+</library>

@@ -1,0 +1,20 @@
+<launch>
+    <arg name="manager_name" default="vs_nodelet_manager" />
+    <node pkg="nodelet" type="nodelet" name="$(arg manager_name)" args="manager" output="screen" />
+
+    <node pkg="pylon_camera" type="pylon_camera_node" name="basler_camera" output="screen">
+        <rosparam command="load" file="$(find vs_publish_image_basler)/config/basler_params.yaml" />
+    </node>
+
+    <node pkg="nodelet" type="nodelet" name="basler_processor" 
+          args="load vs_dvs_processor/BaslerProcessorNodelet $(arg manager_name)" 
+          output="screen">
+        
+        <param name="target_width" value="640" />
+        <param name="target_height" value="480" />
+    </node>
+
+    <node pkg="rqt_image_view" type="rqt_image_view" name="view_raw" args="/basler_camera/image_raw" />
+    
+    <node pkg="rqt_image_view" type="rqt_image_view" name="view_resized" args="/vs/basler/image_resized" />
+</launch>

@@ -1,0 +1,112 @@
+#ifndef VISUAL_SERVOING
+#define VISUAL_SERVOING
+
+#include <Eigen/Dense>
+#include <opencv2/opencv.hpp>
+#include <time.h>
+#include "geometry_msgs/Twist.h"
+#include <vector>
+
+using namespace cv;
+using namespace std;
+
+class Visual_Servoing
+{
+    public:
+        Mat image_gray_desired_;
+        Mat image_gray_current_; 
+        Mat image_gray_initial_;
+        Mat image_depth_desired_;
+        Mat image_depth_current_; 
+        Mat camera_intrinsic_;
+        Mat camera_velocity_; // vx vy vz wx wy wz
+        Mat pose_desired_;
+        double lambda_;
+        double epsilon_; 
+        int resolution_x_;
+        int resolution_y_;
+        Mat L_e_;
+        Mat error_s_;
+        bool flag_first_;
+        int iteration_num_;
+        clock_t start_VS_time_;
+        string depth_strategy_;        // 例如: "hybrid", "desired_only", "constant"
+        double depth_constant_val_;    // 深度常数 (仅在 "constant" 模式下使用)
+        
+        struct data
+        {
+            Mat velocity_;
+            Mat pose_; // ƽ��+��Ԫ��wxyz
+            Mat pose_desired_; // ƽ��+��Ԫ��wxyz
+            Mat error_feature_;
+            Mat image_gray_init_;
+            Mat image_gray_desired_;
+            Mat time_vs_;
+        } data_vs;
+
+    public: 
+        Visual_Servoing(int resolution_x, int resolution_y);
+
+        void init_VS(double lambda, double epsilon, Mat& image_gray_desired, Mat& image_depth_desired, Mat image_gray_initial, Mat camera_intrinsic, Mat pose_desired);
+
+        Mat get_camera_velocity();
+
+        virtual bool is_success();
+
+        virtual void get_feature_error_interaction_matrix() = 0;
+
+        void set_camera_intrinsic(Mat& camera_intrinsic);
+
+        void set_image_gray_desired(Mat& image_gray_desired);
+
+        void set_image_gray_current(Mat& image_gray_current);
+
+        void set_image_gray_initial(Mat& image_gray_initial);
+
+        void set_image_depth_desired(Mat& image_depth_desired);
+
+        void set_image_depth_current(Mat& image_depth_current);
+
+        void set_pose_desired(Mat& pose_desired);
+
+        void set_pose_initial(Mat& pose_initial);
+
+        void save_pose_desired();
+
+        void save_data_image();
+
+        void save_data_image_gray_desired();
+
+        void save_data_image_gray_initial();
+
+        void save_data_camera_velocity();
+
+        virtual void save_data_error_feature();
+
+        void save_data_camera_pose(Mat& pose);
+
+        void save_data_vs_time();
+
+        virtual void save_data_other_parameter() {};
+
+        void save_data(Mat pose);
+
+        void write_data();
+
+        void write_visual_servoing_data(ofstream& oFile);
+
+        virtual void write_other_data(ofstream& oFile){};
+
+        string get_save_file_name(); 
+
+        string get_date_time();
+
+        virtual string get_method_name();
+
+        void write_to_excel(Mat data, ofstream& oFile);
+
+        void set_depth_strategy(string strategy, double constant_val = 0.5);
+};
+
+
+#endif

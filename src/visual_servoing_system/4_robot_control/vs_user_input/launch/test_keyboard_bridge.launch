@@ -1,0 +1,17 @@
+<launch>
+    <include file="$(find vs_velocity_bridge)/launch/bridge_debug.launch" />
+    <node pkg="vs_user_input" type="visualizer.py" name="vs_dashboard" output="screen" />
+
+    <node pkg="vs_user_input" type="keyboard_teleop.py" name="keyboard_teleop" 
+          output="screen" launch-prefix="xterm -e">
+        </node>
+
+    <node pkg="rosservice" type="rosservice" name="auto_bridge_enabler" 
+          args="call --wait /vs_bridge/enable 'data: true'" 
+          output="screen" />
+
+    <node pkg="rostopic" type="rostopic" name="result_monitor" 
+          args="echo /twist_controller/command" 
+          launch-prefix="xterm -e" />
+
+</launch>
