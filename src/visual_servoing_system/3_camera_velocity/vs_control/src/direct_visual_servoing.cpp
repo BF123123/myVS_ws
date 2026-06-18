@@ -58,13 +58,11 @@ void Direct_Visual_Servoing::get_feature_error_interaction_matrix()
     // ==========================================================
     cv::Mat current_intrinsic = this->camera_intrinsic_.clone();
     
-    bool enable_precond = true;     // 开关：设为 true 开启预处理，false 关闭
-    double precond_scale = 0.1;     // 缩放因子：论文使用的是 0.1
     
-    if (enable_precond) {
-        current_intrinsic.at<double>(0, 0) *= precond_scale; // fx
-        current_intrinsic.at<double>(1, 1) *= precond_scale; // fy
-        ROS_INFO_ONCE("\033[1;36m[Pre-conditioning] ENABLED! (Scale: %.2f)\033[0m", precond_scale);
+    if (this->enable_precond_) {
+        current_intrinsic.at<double>(0, 0) *= this->precond_scale_; // fx
+        current_intrinsic.at<double>(1, 1) *= this->precond_scale_; // fy
+        ROS_INFO_ONCE("\033[1;36m[Pre-conditioning] ENABLED! (Scale: %.2f)\033[0m", this->precond_scale_);
     }
     // ==========================================================
 

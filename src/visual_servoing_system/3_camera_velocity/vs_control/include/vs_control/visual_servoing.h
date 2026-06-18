@@ -106,7 +106,12 @@ class Visual_Servoing
         void write_to_excel(Mat data, ofstream& oFile);
 
         void set_depth_strategy(string strategy, double constant_val = 0.5);
-};
+
+        // 【新增】预处理参数与设置函数
+        bool enable_precond_;
+        double precond_scale_;
+        void set_precondition(bool enable, double scale);
+    };
 
 
 #endif

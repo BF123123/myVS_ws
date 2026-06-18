@@ -39,16 +39,11 @@ void Defocused_Visual_Servoing::get_feature_error_interaction_matrix()
     // ==========================================================
     // 插入RAL缩小f焦距预处理方法 (解决旋转平移强耦合)
     // ==========================================================
-    bool enable_precond = true;     
-    double precond_scale = 0.1;     
     
-    if (enable_precond) {
-        fx *= precond_scale;
-        fy *= precond_scale;
-        // ==========================================================
-        // [修改点 2]：预处理配置通常不会变，只打印一次即可
-        // ==========================================================
-        ROS_INFO_ONCE("\033[1;36m[Pre-conditioning] ENABLED! (Scale: %.2f)\033[0m", precond_scale);
+    if (this->enable_precond_) {
+        fx *= this->precond_scale_;
+        fy *= this->precond_scale_;      
+        ROS_INFO_ONCE("\033[1;36m[Pre-conditioning] ENABLED! (Scale: %.2f)\033[0m", this->precond_scale_);
     }
     // ==========================================================
 
@@ -60,7 +55,7 @@ void Defocused_Visual_Servoing::get_feature_error_interaction_matrix()
     double D = 2.0 * R_f;      // 光圈直径 (m) 
 
     // 提前在循环外计算精确散焦系数的常数部分
-    double K_exact_const = (D * D * fx * fx * Z_f) / (36.0 * (Z_f - f_metric) * (Z_f - f_metric));
+    double K_exact_const = (D * D * fx * fx) / (36.0 * Z_f);//double K_exact_const = (D * D * fx * fx) / 36.0 * Z_f;居然也收敛
 
     // 3. 计算图像特征
     cv::Mat I_current = this->image_gray_current_;

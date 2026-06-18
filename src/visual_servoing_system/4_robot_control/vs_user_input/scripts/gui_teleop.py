@@ -11,6 +11,22 @@ from tkinter import ttk, messagebox
 from geometry_msgs.msg import Twist
 from std_srvs.srv import Trigger, SetBool
 
+# --- 现代 UI 调色板 ---
+BG_MAIN = "#F4F6F9"        # 整体浅灰背景
+BG_CARD = "#FFFFFF"        # 卡片纯白背景
+TEXT_MAIN = "#2C3E50"      # 深蓝灰主文本
+TEXT_LIGHT = "#7F8C8D"     # 浅灰次文本
+COLOR_PRIMARY = "#3498DB"  # 主题蓝
+COLOR_SUCCESS = "#2ECC71"  # 成功绿
+COLOR_DANGER = "#E74C3C"   # 危险红
+COLOR_WARNING = "#F1C40F"  # 警告/激活黄
+COLOR_HOVER = "#E0E6ED"    # 按钮默认底色
+
+FONT_TITLE = ("Segoe UI", 16, "bold")
+FONT_HEADING = ("Segoe UI", 12, "bold")
+FONT_MAIN = ("Segoe UI", 10)
+FONT_BTN = ("Segoe UI", 10, "bold")
+
 class ConfigManager:
     def __init__(self):
         rospack = rospkg.RosPack()
@@ -47,12 +63,12 @@ class ConfigManager:
         except Exception as e:
             rospy.logerr(f"Failed to update YAML: {e}")
 
-
 class VSDashboard:
     def __init__(self, root):
         self.root = root
         self.root.title("Visual Servoing Control Dashboard")
-        self.root.geometry("750x650")
+        self.root.geometry("850x700")
+        self.root.configure(bg=BG_MAIN) # 设置主背景色
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
         
         # ROS Setup
@@ -73,146 +89,192 @@ class VSDashboard:
         self.in_auto_mode = False
         self.current_twist = Twist()
 
+        self.setup_styles()
         self.create_widgets()
         
-        # 启动后台发布循环 (完美模仿原键盘节点的 while(1) 机制)
         self.publish_move_loop()
 
-    def create_widgets(self):
+    def setup_styles(self):
         style = ttk.Style()
         style.theme_use('clam')
         
-        # === 1. TOP: Status & Emergency ===
-        frame_top = tk.Frame(self.root, pady=10)
-        frame_top.pack(fill=tk.X, padx=20)
+        # 全局 TTK 样式美化
+        style.configure(".", font=FONT_MAIN, background=BG_CARD, foreground=TEXT_MAIN)
+        style.configure("TLabelframe", background=BG_MAIN, borderwidth=0)
+        style.configure("TLabelframe.Label", font=FONT_HEADING, foreground=TEXT_MAIN, background=BG_MAIN)
         
-        self.lbl_status = tk.Label(frame_top, text="Mode: MANUAL", font=("Arial", 16, "bold"), fg="blue")
+        style.configure("TCombobox", padding=5)
+        style.configure("TEntry", padding=5)
+        style.configure("TCheckbutton", background=BG_CARD, font=FONT_MAIN)
+        
+        # 按钮样式
+        style.configure("Primary.TButton", font=FONT_BTN, padding=6, background=COLOR_PRIMARY, foreground="white")
+        style.map("Primary.TButton", background=[("active", "#2980B9")])
+        
+        style.configure("Card.TFrame", background=BG_CARD)
+
+    def create_widgets(self):
+        # === 1. TOP: Status & Emergency ===
+        frame_top = tk.Frame(self.root, bg=TEXT_MAIN, pady=15, padx=20)
+        frame_top.pack(fill=tk.X)
+        
+        self.lbl_status = tk.Label(frame_top, text="● MODE: MANUAL", font=FONT_TITLE, bg=TEXT_MAIN, fg="#3498DB")
         self.lbl_status.pack(side=tk.LEFT)
         
-        btn_stop = tk.Button(frame_top, text="EMERGENCY STOP (SPACE)", font=("Arial", 14, "bold"), bg="red", fg="white", command=self.stop_all)
+        btn_stop = tk.Button(frame_top, text="EMERGENCY STOP (SPACE)", font=FONT_BTN, bg=COLOR_DANGER, fg="white", 
+                             relief="flat", padx=15, pady=5, cursor="hand2", command=self.stop_all)
         btn_stop.pack(side=tk.RIGHT)
         self.root.bind('<space>', lambda e: self.stop_all())
 
-        # === 2. SETTINGS PANEL ===
-        frame_settings = ttk.LabelFrame(self.root, text=" System Configuration ")
-        frame_settings.pack(fill=tk.X, padx=20, pady=10, ipadx=10, ipady=10)
+        # === 2. SETTINGS PANEL (美化参数与 Precond 区域) ===
+        frame_settings_wrapper = ttk.LabelFrame(self.root, text="System Configuration")
+        frame_settings_wrapper.pack(fill=tk.X, padx=20, pady=(15, 10))
         
+        # 卡片式白底容器
+        frame_settings = ttk.Frame(frame_settings_wrapper, style="Card.TFrame")
+        frame_settings.pack(fill=tk.X, padx=5, pady=5, ipadx=10, ipady=10)
+
         self.var_cam = tk.StringVar(value=rospy.get_param("/vs_controller/primary_camera", "basler"))
         self.var_algo = tk.StringVar(value=rospy.get_param("/vs_controller/algorithm_type", "defocused"))
         self.var_depth = tk.StringVar(value=rospy.get_param("/vs_controller/depth_strategy", "constant"))
+        self.var_precond = tk.BooleanVar(value=rospy.get_param("/vs_controller/enable_precond", True))
+        self.var_scale = tk.StringVar(value=str(rospy.get_param("/vs_controller/precond_scale", 0.1)))
 
-        ttk.Label(frame_settings, text="Primary Camera:").grid(row=0, column=0, sticky=tk.E, padx=5, pady=5)
-        cb_cam = ttk.Combobox(frame_settings, textvariable=self.var_cam, values=["l515", "basler"], state="readonly")
-        cb_cam.grid(row=0, column=1, padx=5, pady=5)
+        # Row 0: Basic Params
+        ttk.Label(frame_settings, text="Camera:").grid(row=0, column=0, sticky=tk.E, padx=(10, 5), pady=10)
+        ttk.Combobox(frame_settings, textvariable=self.var_cam, values=["l515", "basler"], state="readonly", width=12).grid(row=0, column=1, padx=5, pady=10)
 
-        ttk.Label(frame_settings, text="Algorithm:").grid(row=0, column=2, sticky=tk.E, padx=5, pady=5)
-        cb_algo = ttk.Combobox(frame_settings, textvariable=self.var_algo, values=["dvs", "defocused", "depth", "defocused_RAL"], state="readonly")
-        cb_algo.grid(row=0, column=3, padx=5, pady=5)
+        ttk.Label(frame_settings, text="Algorithm:").grid(row=0, column=2, sticky=tk.E, padx=(20, 5), pady=10)
+        ttk.Combobox(frame_settings, textvariable=self.var_algo, values=["dvs", "defocused", "depth", "defocused_RAL"], state="readonly", width=15).grid(row=0, column=3, padx=5, pady=10)
 
-        ttk.Label(frame_settings, text="Depth Strategy:").grid(row=0, column=4, sticky=tk.E, padx=5, pady=5)
-        cb_depth = ttk.Combobox(frame_settings, textvariable=self.var_depth, values=["realtime", "constant", "desired_only"], state="readonly")
-        cb_depth.grid(row=0, column=5, padx=5, pady=5)
+        ttk.Label(frame_settings, text="Depth:").grid(row=0, column=4, sticky=tk.E, padx=(20, 5), pady=10)
+        ttk.Combobox(frame_settings, textvariable=self.var_depth, values=["realtime", "constant", "desired_only"], state="readonly", width=12).grid(row=0, column=5, padx=5, pady=10)
 
-        btn_apply = ttk.Button(frame_settings, text="Apply & Reload", command=self.apply_settings)
-        btn_apply.grid(row=1, column=0, columnspan=6, pady=10)
+        # 分割线
+        ttk.Separator(frame_settings, orient=tk.HORIZONTAL).grid(row=1, column=0, columnspan=6, sticky="ew", padx=10, pady=5)
+
+        # Row 2: Precondition Settings (优化排版)
+        frame_precond = ttk.Frame(frame_settings, style="Card.TFrame")
+        frame_precond.grid(row=2, column=0, columnspan=4, sticky=tk.W, padx=10, pady=5)
+        
+        ttk.Checkbutton(frame_precond, text="Enable Matrix Preconditioning", variable=self.var_precond).pack(side=tk.LEFT, padx=(0, 20))
+        ttk.Label(frame_precond, text="Precond Scale:").pack(side=tk.LEFT, padx=(0, 5))
+        self.entry_scale = ttk.Entry(frame_precond, textvariable=self.var_scale, width=10)
+        self.entry_scale.pack(side=tk.LEFT)
+
+        # Apply Button right-aligned
+        btn_apply = ttk.Button(frame_settings, text="Apply & Reload", style="Primary.TButton", command=self.apply_settings)
+        btn_apply.grid(row=2, column=4, columnspan=2, sticky=tk.E, padx=10, pady=5)
 
         # === 3. MAIN CONTROL & WAYPOINTS ===
-        frame_mid = tk.Frame(self.root)
-        frame_mid.pack(fill=tk.BOTH, expand=True, padx=20)
+        frame_mid = tk.Frame(self.root, bg=BG_MAIN)
+        frame_mid.pack(fill=tk.BOTH, expand=True, padx=20, pady=(0, 20))
 
-        # Left: Waypoints
-        frame_wp = ttk.LabelFrame(frame_mid, text=" Waypoints & Tasks ")
-        frame_wp.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 10))
-
-        btn_save_target = tk.Button(frame_wp, text="[M] SAVE TARGET IMAGE", bg="lightgreen", font=("Arial", 12, "bold"), command=self.cmd_save_target)
-        btn_save_target.pack(fill=tk.X, padx=10, pady=10)
+        # Left: Waypoints (卡片式)
+        frame_wp_wrapper = ttk.LabelFrame(frame_mid, text="Waypoints & Tasks")
+        frame_wp_wrapper.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 10))
         
-        btn_servo = tk.Button(frame_wp, text="[V] START AUTO SERVO", bg="cyan", font=("Arial", 12, "bold"), command=self.cmd_auto_servo)
-        btn_servo.pack(fill=tk.X, padx=10, pady=10)
+        frame_wp = ttk.Frame(frame_wp_wrapper, style="Card.TFrame")
+        frame_wp.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
-        ttk.Separator(frame_wp, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=10)
+        self.create_flat_btn(frame_wp, "[M] SAVE TARGET IMAGE", COLOR_SUCCESS, "white", self.cmd_save_target).pack(fill=tk.X, padx=15, pady=(15, 5))
+        self.create_flat_btn(frame_wp, "[V] START AUTO SERVO", COLOR_PRIMARY, "white", self.cmd_auto_servo).pack(fill=tk.X, padx=15, pady=5)
+
+        ttk.Separator(frame_wp, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=15, padx=15)
 
         for i in range(1, 5):
-            f = tk.Frame(frame_wp)
-            f.pack(fill=tk.X, padx=10, pady=2)
-            ttk.Button(f, text=f"Move Slot {i}", command=lambda idx=i: self.cmd_move_slot(idx)).pack(side=tk.LEFT, expand=True, fill=tk.X, padx=2)
-            ttk.Button(f, text=f"Save Slot {i}", command=lambda idx=i: self.cmd_save_slot(idx)).pack(side=tk.RIGHT, expand=True, fill=tk.X, padx=2)
+            f = ttk.Frame(frame_wp, style="Card.TFrame")
+            f.pack(fill=tk.X, padx=15, pady=3)
+            ttk.Button(f, text=f"Move Slot {i}", command=lambda idx=i: self.cmd_move_slot(idx)).pack(side=tk.LEFT, expand=True, fill=tk.X, padx=(0, 2))
+            ttk.Button(f, text=f"Save {i}", command=lambda idx=i: self.cmd_save_slot(idx)).pack(side=tk.RIGHT, expand=True, fill=tk.X, padx=(2, 0))
 
-        ttk.Button(frame_wp, text="[H] Home Robot", command=self.cmd_home).pack(fill=tk.X, padx=10, pady=10)
+        ttk.Separator(frame_wp, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=15, padx=15)
+        ttk.Button(frame_wp, text="[H] Home Robot", command=self.cmd_home).pack(fill=tk.X, padx=15, pady=(0, 15))
 
         # Right: Teleop
-        frame_teleop = ttk.LabelFrame(frame_mid, text=" Teleop (Hold to Move) ")
-        frame_teleop.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+        frame_teleop_wrapper = ttk.LabelFrame(frame_mid, text="Teleop (Hold to Move)")
+        frame_teleop_wrapper.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+        
+        frame_teleop = ttk.Frame(frame_teleop_wrapper, style="Card.TFrame")
+        frame_teleop.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
-        lbl_tip = tk.Label(frame_teleop, text="Press and Hold buttons to move camera", fg="gray")
-        lbl_tip.pack(pady=5)
+        lbl_tip = tk.Label(frame_teleop, text="Press and Hold buttons to move camera", bg=BG_CARD, fg=TEXT_LIGHT, font=FONT_MAIN)
+        lbl_tip.pack(pady=10)
 
         # XYZ Grid
-        frame_xyz = tk.Frame(frame_teleop)
-        frame_xyz.pack(pady=10)
-        self.make_move_btn(frame_xyz, "Forward (+Z)", 0, 0, 0.04, 0, 0, 0).grid(row=0, column=1)
-        self.make_move_btn(frame_xyz, "Left (-X)", -0.04, 0, 0, 0, 0, 0).grid(row=1, column=0)
-        self.make_move_btn(frame_xyz, "Backward (-Z)", 0, 0, -0.04, 0, 0, 0).grid(row=1, column=1)
-        self.make_move_btn(frame_xyz, "Right (+X)", 0.04, 0, 0, 0, 0, 0).grid(row=1, column=2)
-        self.make_move_btn(frame_xyz, "Up (-Y)", 0, -0.04, 0, 0, 0, 0).grid(row=0, column=3, padx=20)
-        self.make_move_btn(frame_xyz, "Down (+Y)", 0, 0.04, 0, 0, 0, 0).grid(row=1, column=3, padx=20)
+        frame_xyz = tk.Frame(frame_teleop, bg=BG_CARD)
+        frame_xyz.pack(pady=5)
+        self.make_move_btn(frame_xyz, "Forward\n(+Z)", 0, 0, 0.04, 0, 0, 0).grid(row=0, column=1, padx=3, pady=3)
+        self.make_move_btn(frame_xyz, "Left\n(-X)", -0.04, 0, 0, 0, 0, 0).grid(row=1, column=0, padx=3, pady=3)
+        self.make_move_btn(frame_xyz, "Backward\n(-Z)", 0, 0, -0.04, 0, 0, 0).grid(row=1, column=1, padx=3, pady=3)
+        self.make_move_btn(frame_xyz, "Right\n(+X)", 0.04, 0, 0, 0, 0, 0).grid(row=1, column=2, padx=3, pady=3)
+        self.make_move_btn(frame_xyz, "Up\n(-Y)", 0, -0.04, 0, 0, 0, 0).grid(row=0, column=3, padx=(25, 3), pady=3)
+        self.make_move_btn(frame_xyz, "Down\n(+Y)", 0, 0.04, 0, 0, 0, 0).grid(row=1, column=3, padx=(25, 3), pady=3)
 
-        ttk.Separator(frame_teleop, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=10)
+        ttk.Separator(frame_teleop, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=15, padx=20)
 
         # RPY Grid
-        frame_rpy = tk.Frame(frame_teleop)
-        frame_rpy.pack(pady=10)
-        self.make_move_btn(frame_rpy, "Pitch Down (+Rx)", 0, 0, 0, 0.09, 0, 0).grid(row=0, column=1)
-        self.make_move_btn(frame_rpy, "Yaw Right (-Ry)", 0, 0, 0, 0, -0.09, 0).grid(row=1, column=0)
-        self.make_move_btn(frame_rpy, "Pitch Up (-Rx)", 0, 0, 0, -0.09, 0, 0).grid(row=1, column=1)
-        self.make_move_btn(frame_rpy, "Yaw Left (+Ry)", 0, 0, 0, 0, 0.09, 0).grid(row=1, column=2)
-        self.make_move_btn(frame_rpy, "Roll CCW (-Rz)", 0, 0, 0, 0, 0, -0.09).grid(row=0, column=3, padx=20)
-        self.make_move_btn(frame_rpy, "Roll CW (+Rz)", 0, 0, 0, 0, 0, 0.09).grid(row=1, column=3, padx=20)
+        frame_rpy = tk.Frame(frame_teleop, bg=BG_CARD)
+        frame_rpy.pack(pady=5)
+        self.make_move_btn(frame_rpy, "Pitch Dn\n(+Rx)", 0, 0, 0, 0.09, 0, 0).grid(row=0, column=1, padx=3, pady=3)
+        self.make_move_btn(frame_rpy, "Yaw Rt\n(-Ry)", 0, 0, 0, 0, -0.09, 0).grid(row=1, column=0, padx=3, pady=3)
+        self.make_move_btn(frame_rpy, "Pitch Up\n(-Rx)", 0, 0, 0, -0.09, 0, 0).grid(row=1, column=1, padx=3, pady=3)
+        self.make_move_btn(frame_rpy, "Yaw Lf\n(+Ry)", 0, 0, 0, 0, 0.09, 0).grid(row=1, column=2, padx=3, pady=3)
+        self.make_move_btn(frame_rpy, "Roll CCW\n(-Rz)", 0, 0, 0, 0, 0, -0.09).grid(row=0, column=3, padx=(25, 3), pady=3)
+        self.make_move_btn(frame_rpy, "Roll CW\n(+Rz)", 0, 0, 0, 0, 0, 0.09).grid(row=1, column=3, padx=(25, 3), pady=3)
 
-    # --- 核心：连续发布循环 (10Hz) ---
-    def publish_move_loop(self):
-        if rospy.is_shutdown():
-            self.root.destroy()
-            return
-            
-        # 只要不处于 Auto 模式，就持续发布 (有按键发布速度，没按键发布全 0)，保持连接活跃
-        if not self.in_auto_mode:
-            self.pub.publish(self.current_twist)
-            
-        self.root.after(100, self.publish_move_loop) 
+    # --- UI Helpers ---
+    def create_flat_btn(self, parent, text, bg_color, fg_color, command):
+        btn = tk.Button(parent, text=text, bg=bg_color, fg=fg_color, font=FONT_BTN, 
+                        relief="flat", borderwidth=0, cursor="hand2", command=command, pady=8)
+        # 悬停变色效果
+        btn.bind("<Enter>", lambda e: btn.config(bg=self.adjust_color_lightness(bg_color, 1.1)))
+        btn.bind("<Leave>", lambda e: btn.config(bg=bg_color))
+        return btn
 
-    # --- Teleop Logic ---
+    def adjust_color_lightness(self, hex_color, factor):
+        """简单计算悬停颜色的高亮辅助函数"""
+        h = hex_color.lstrip('#')
+        rgb = tuple(int(h[i:i+2], 16) for i in (0, 2, 4))
+        new_rgb = tuple(min(int(c * factor), 255) for c in rgb)
+        return '#%02x%02x%02x' % new_rgb
+
     def make_move_btn(self, parent, text, x, y, z, ax, ay, az):
-        btn = tk.Button(parent, text=text, width=12, height=2, bg="lightgray")
+        btn = tk.Button(parent, text=text, width=10, height=2, bg=COLOR_HOVER, fg=TEXT_MAIN,
+                        relief="flat", font=("Segoe UI", 9, "bold"), cursor="hand2")
         
-        # 安全闭包绑定，同时增加按键变黄的视觉反馈
         def on_press(event, _x=x, _y=y, _z=z, _ax=ax, _ay=ay, _az=az):
-            btn.config(bg="yellow")
+            btn.config(bg=COLOR_WARNING, fg="black")
             self.start_move(_x, _y, _z, _ax, _ay, _az)
             
         def on_release(event):
-            btn.config(bg="lightgray")
+            btn.config(bg=COLOR_HOVER, fg=TEXT_MAIN)
             self.stop_move()
             
         btn.bind('<ButtonPress-1>', on_press)
         btn.bind('<ButtonRelease-1>', on_release)
         return btn
 
+    # --- 核心机制 (保持不变) ---
+    def publish_move_loop(self):
+        if rospy.is_shutdown():
+            self.root.destroy()
+            return
+        if not self.in_auto_mode:
+            self.pub.publish(self.current_twist)
+        self.root.after(100, self.publish_move_loop) 
+
     def start_move(self, x, y, z, ax, ay, az):
         if self.in_auto_mode:
             self.in_auto_mode = False
-            self.lbl_status.config(text="Mode: MANUAL", fg="blue")
+            self.lbl_status.config(text="● MODE: MANUAL", fg=COLOR_PRIMARY)
             try:
                 self.srv_servo_toggle(False)
                 self.srv_direct_enable(False)
             except: pass
-            
-        # 【关键修复】确保机械臂管理器进入手动接收模式
-        try: 
-            self.srv_manual_toggle(True)
+        try: self.srv_manual_toggle(True)
         except: pass
 
-        # 更新当前发送的 Twist 目标值
         self.current_twist.linear.x = float(x)
         self.current_twist.linear.y = float(y)
         self.current_twist.linear.z = float(z)
@@ -221,26 +283,30 @@ class VSDashboard:
         self.current_twist.angular.z = float(az)
 
     def stop_move(self):
-        # 按钮松开时，将数值全部重置为 0，循环会自动发布 0 从而刹车
         self.current_twist = Twist()
 
     def stop_all(self):
         self.stop_move()
         self.in_auto_mode = False
-        self.lbl_status.config(text="Mode: MANUAL", fg="blue")
+        self.lbl_status.config(text="● MODE: MANUAL", fg=COLOR_PRIMARY)
         try: 
             self.srv_manual_toggle(True)
             self.srv_servo_toggle(False)
             self.srv_direct_enable(False)
         except: pass
         rospy.loginfo(">> EMERGENCY STOP / MANUAL OVERRIDE")
-        self.pub.publish(Twist()) # 强制立刻发一帧 0 刹车
+        self.pub.publish(Twist())
 
-    # --- Commands ---
+    # --- Commands (保持不变) ---
     def apply_settings(self):
         c_cam = self.var_cam.get()
         c_algo = self.var_algo.get()
         c_depth = self.var_depth.get()
+        c_precond = self.var_precond.get()
+        try: c_scale = float(self.var_scale.get())
+        except ValueError:
+            messagebox.showerror("Error", "Precond Scale 必须是合法的浮点数！")
+            return
 
         old_cam = rospy.get_param("/vs_controller/primary_camera", "")
         if c_cam != old_cam:
@@ -249,34 +315,34 @@ class VSDashboard:
         rospy.set_param("/vs_controller/primary_camera", c_cam)
         rospy.set_param("/vs_controller/algorithm_type", c_algo)
         rospy.set_param("/vs_controller/depth_strategy", c_depth)
+        rospy.set_param("/vs_controller/enable_precond", c_precond)
+        rospy.set_param("/vs_controller/precond_scale", c_scale)
 
         self.config_mgr.update_yaml("primary_camera", c_cam)
         self.config_mgr.update_yaml("algorithm_type", c_algo)
         self.config_mgr.update_yaml("depth_strategy", c_depth)
+        self.config_mgr.update_yaml("enable_precond", c_precond)
+        self.config_mgr.update_yaml("precond_scale", c_scale)
+        
         self.config_mgr.update_launch_default("primary_camera", c_cam)
         self.config_mgr.update_launch_default("algo_type", c_algo)
         self.config_mgr.update_launch_default("depth_strategy", c_depth)
-
         try:
             resp = self.srv_reload_config()
-            rospy.loginfo(f"Reload: {resp.message}")
             messagebox.showinfo("Success", "Parameters applied and algorithm reloaded successfully!")
         except Exception as e:
             messagebox.showerror("Error", f"Failed to reload config: {e}")
 
     def cmd_save_target(self):
-        try: 
-            self.srv_save_target()
-            rospy.loginfo(">> Target Saved")
+        try: self.srv_save_target()
         except Exception as e: rospy.logerr(e)
 
     def cmd_auto_servo(self):
         self.in_auto_mode = True
-        self.lbl_status.config(text="Mode: AUTO SERVO", fg="green")
+        self.lbl_status.config(text="● MODE: AUTO SERVO", fg=COLOR_SUCCESS)
         try:
             self.srv_servo_toggle(True)
             self.srv_direct_enable(True)
-            rospy.loginfo(">> Auto Servo Started")
         except Exception as e: rospy.logerr(e)
 
     def cmd_move_slot(self, idx):
@@ -286,9 +352,7 @@ class VSDashboard:
 
     def cmd_save_slot(self, idx):
         rospy.set_param("/vs_manager/current_slot_id", idx)
-        try: 
-            self.srv_save_slot()
-            messagebox.showinfo("Saved", f"Current pose saved to Slot {idx}")
+        try: self.srv_save_slot()
         except: pass
 
     def cmd_home(self):

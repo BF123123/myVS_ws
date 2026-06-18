@@ -44,6 +44,8 @@ private:
     // 【新增】 异步发布线程函数
     void publishThreadFunc();
 
+    std::mutex algo_mutex_;             // 【新增】保护 dvs_algo_ 指针的锁
+
     ros::NodeHandle nh_;
     ros::NodeHandle private_nh_;
     Visual_Servoing* dvs_algo_; 
@@ -66,6 +68,10 @@ private:
     std::shared_ptr<image_transport::SubscriberFilter> sub_des_gray_;
     std::shared_ptr<image_transport::SubscriberFilter> sub_des_depth_;
     std::shared_ptr<message_filters::Synchronizer<SyncPolicy>> sync_des_;
+
+    // 【新增】预处理动态参数
+    bool enable_precond_;
+    double precond_scale_;
 
     std::string camera_frame_; 
 

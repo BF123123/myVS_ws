@@ -1,9 +1,11 @@
-algorithm_type: defocused_RAL
+algorithm_type: defocused
 camera_frame: camera_color_optical_frame
-depth_constant_value: 0.2
+depth_constant_value: 0.4
 depth_strategy: constant
+enable_precond: true
 epsilon: 8
 lambda: 0.8
+precond_scale: 0.1
 primary_camera: basler
 resolution_x: 640
 resolution_y: 480

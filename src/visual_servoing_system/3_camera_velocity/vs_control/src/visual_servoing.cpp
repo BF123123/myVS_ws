@@ -24,7 +24,10 @@ Visual_Servoing::Visual_Servoing(int resolution_x=640, int resolution_y=480)
 	//  初始化默认策略为 "realtime"
     this->depth_strategy_ = "realtime";   
     this->depth_constant_val_ = 0.5;
-	
+
+    this->enable_precond_ = true;  // 【新增】默认开启预处理
+    this->precond_scale_ = 0.1;     // 【新增】默认缩放系数为 0.1
+
 }
 
 void Visual_Servoing::set_depth_strategy(string strategy, double constant_val)
@@ -385,5 +388,12 @@ void Visual_Servoing::write_to_excel(Mat data, ofstream& oFile)
 				oFile << endl;
 			}
 		}
+}
+
+// 【新增】动态设置预处理参数
+void Visual_Servoing::set_precondition(bool enable, double scale)
+{
+    this->enable_precond_ = enable;
+    this->precond_scale_ = scale;
 }
 

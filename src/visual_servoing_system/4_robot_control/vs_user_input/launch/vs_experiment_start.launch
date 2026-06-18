@@ -1,7 +1,7 @@
 <launch>
     <arg name="primary_camera" default="basler" doc="Options: basler, l515" />
     <arg name="depth_strategy" default="constant" doc="Options: constant, realtime, desired_only" />
-    <arg name="algo_type"      default="defocused_RAL" doc="Options: defocused, dvs, depth" />
+    <arg name="algo_type"      default="defocused" doc="Options: defocused, dvs, depth" />
 
     <arg name="camera_frame_name" value="basler_camera_optical_frame" if="$(eval arg('primary_camera') == 'basler')" />
     <arg name="camera_frame_name" value="l515_camera_color_optical_frame"  if="$(eval arg('primary_camera') == 'l515')" /> 

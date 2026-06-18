@@ -41,16 +41,10 @@ void Defocused_Visual_Servoing_RAL::get_feature_error_interaction_matrix()
     // ==========================================================
     // 插入RAL缩小f焦距方法
     // ==========================================================
-    bool enable_precond = true;     // 开关：设为 true 开启预处理，false 关闭
-    double precond_scale = 0.1;     // 缩悉因子：论文使用的是 0.1
-    
-    if (enable_precond) {
-        fx *= precond_scale;
-        fy *= precond_scale;
-        // ==========================================================
-        // [修改点 2]：预处理配置只打印一次
-        // ==========================================================
-        ROS_INFO_ONCE("\033[1;36m[Pre-conditioning] ENABLED! (Scale: %.2f)\033[0m", precond_scale);
+    if (this->enable_precond_) {
+        fx *= this->precond_scale_;
+        fy *= this->precond_scale_;      
+        ROS_INFO_ONCE("\033[1;36m[Pre-conditioning] ENABLED! (Scale: %.2f)\033[0m", this->precond_scale_);
     }
     // ==========================================================
 
@@ -66,8 +60,8 @@ void Defocused_Visual_Servoing_RAL::get_feature_error_interaction_matrix()
     double D = 2.0 * R_f;         // 光圈直径 (m) 
     
     // 对应 Eq (20) 中散焦系数的常数部分: (D * f_x) / ( 6 * (Z_f - f) )
-    // 这里利用了 f_x = f / k_u 的关系进行了化简替换
-    double K_paper_const = (D * fx) / (6.0 * (Z_f - f_metric)); 
+    // 这里利用了 f_x = D_f / k_u 的关系进行了化简替换
+    double K_paper_const = (D * fx) / (6.0 * Z_f ); 
 
     // 3. 计算图像特征
     cv::Mat I_current = this->image_gray_current_;
