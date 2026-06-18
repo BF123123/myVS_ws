@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<robot name="ur5_robot" xmlns:xacro="http://ros.org/wiki/xacro">
+<!-- 名称原文件为robot -->
+
+        <!-- Includes -->
+        <xacro:include filename="$(find ur_description)/urdf/inc/ur5_macro.xacro" />
+
+        <!-- Create robot instances -->
+        <xacro:arg name="kinematics_config" default=""/>
+        <!-- <xacro:ur5_robot prefix="" kinematics_parameters_file="$(arg kinematics_config)"/> -->
+        <xacro:ur5_robot prefix="" />
+        <!-- 源文件未加载kinematics_config -->
+
+        <!-- Connect robot to world -->
+        <link name="world" />
+        <joint name="world_joint" type="fixed">
+                <parent link="world" />
+                <child link = "base_link" />
+                <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+        </joint>
+
+        <!-- Add gripper frame for Cartesian trajectory controller -->
+        <link name="grasping_center" />
+        <joint name="grasping_center_joint" type="fixed">
+                <parent link="tool0" />
+                <child link = "grasping_center" />
+                <origin xyz="0.0 0.0 0.025" rpy="0 0 0" />
+        </joint>
+
+</robot>

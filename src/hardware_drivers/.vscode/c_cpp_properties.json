@@ -1,0 +1,50 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/bf/work/myVS_ws/devel/include/**",
+        "/home/bf/VS2_ws/devel/include/**",
+        "/home/bf/VS_ws/devel/include/**",
+        "/opt/ros/noetic/include/**",
+        "/home/bf/work/myVS_ws/src/hardware_drivers/Robot/UR/Universal_Robots_ROS_controllers_cartesian/cartesian_interface/include/**",
+        "/home/bf/work/myVS_ws/src/hardware_drivers/Robot/UR/Universal_Robots_ROS_controllers_cartesian/cartesian_trajectory_controller/include/**",
+        "/home/bf/work/myVS_ws/src/hardware_drivers/Robot/UR/Universal_Robots_ROS_controllers_cartesian/cartesian_trajectory_interpolation/include/**",
+        "/home/bf/work/myVS_ws/src/hardware_drivers/Robot/Franka/franka_ros/franka_control/include/**",
+        "/home/bf/work/myVS_ws/src/hardware_drivers/Robot/Franka/mvp_grasp/franka_control_wrappers/include/**",
+        "/home/bf/work/myVS_ws/src/hardware_drivers/Robot/Franka/franka_ros/franka_example_controllers/include/**",
+        "/home/bf/work/myVS_ws/src/hardware_drivers/Robot/Franka/franka_ros_learn/franka_example_controllers_cyh/include/**",
+        "/home/bf/work/myVS_ws/src/hardware_drivers/Robot/Franka/franka_ros/franka_gazebo/include/**",
+        "/home/bf/work/myVS_ws/src/hardware_drivers/Robot/Franka/franka_ros/franka_gripper/include/**",
+        "/home/bf/work/myVS_ws/src/hardware_drivers/Robot/Franka/franka_ros/franka_hw/include/**",
+        "/home/bf/work/myVS_ws/src/hardware_drivers/Robot/Franka/franka_moveit/geometric_shapes/include/**",
+        "/home/bf/VS2_ws/src/visual_servoing/image_process/include/**",
+        "/home/bf/work/myVS_ws/src/hardware_drivers/Robot/Franka/franka_moveit/moveit_visual_tools/include/**",
+        "/home/bf/work/myVS_ws/src/hardware_drivers/Camera/basler-ros/pylon_camera/include/**",
+        "/home/bf/work/myVS_ws/src/hardware_drivers/Camera/realsense-ros/realsense2_camera/include/**",
+        "/home/bf/VS2_ws/src/visual_servoing/robot_control_VS/include/**",
+        "/home/bf/work/myVS_ws/src/hardware_drivers/Robot/Franka/franka_moveit/srdfdom/include/**",
+        "/home/bf/work/myVS_ws/src/hardware_drivers/Robot/UR/Universal_Robots_ROS_controllers_cartesian/twist_controller/include/**",
+        "/home/bf/VS_ws/src/ur5_visual_servo/include/**",
+        "/home/bf/work/myVS_ws/src/hardware_drivers/Robot/UR/Universal_Robots_ROS_Driver/ur_calibration/include/**",
+        "/home/bf/work/myVS_ws/src/hardware_drivers/Robot/UR/universal_robot/ur_kinematics/include/**",
+        "/home/bf/work/myVS_ws/src/hardware_drivers/Robot/UR/Universal_Robots_ROS_Driver/ur_robot_driver/include/**",
+        "/home/bf/work/myVS_ws/src/visual_servoing_system/3_camera_velocity/vs_control/include/**",
+        "/home/bf/work/myVS_ws/src/visual_servoing_system/2_image_preprocessing/vs_dvs_processor/include/**",
+        "/home/bf/work/myVS_ws/src/visual_servoing_system/1_publish_image/vs_publish_image_L515/include/**",
+        "/home/bf/work/myVS_ws/src/visual_servoing_system/1_publish_image/vs_publish_image_basler/include/**",
+        "/home/bf/work/myVS_ws/src/visual_servoing_system/4_robot_control/vs_velocity_bridge/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}

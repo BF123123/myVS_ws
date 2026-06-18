@@ -1,0 +1,51 @@
+<library path="lib/libfranka_example_controllers_cyh">
+
+  <class name="franka_example_controllers_cyh/ElbowExampleController_cyh" 
+          type="franka_example_controllers_cyh::ElbowExampleController_cyh" 
+          base_class_type="controller_interface::ControllerBase">
+    <description>
+      A controller that executes a short motion based on cartesian poses and elbow to demonstrate correct usage
+    </description>
+  </class>
+
+  <class name="franka_example_controllers_cyh/JointPositionExampleController_cyh" 
+         type="franka_example_controllers_cyh::JointPositionExampleController_cyh" 
+         base_class_type="controller_interface::ControllerBase">
+    <description>
+      A controller that executes a short motion based on joint positions to demonstrate correct usage
+    </description>
+  </class>
+
+  <class name="franka_example_controllers_cyh/JointVelocityExampleController_cyh" 
+         type="franka_example_controllers_cyh::JointVelocityExampleController_cyh" 
+         base_class_type="controller_interface::ControllerBase">
+    <description>
+      A controller that executes a short motion based on joint velocities to demonstrate correct usage
+    </description>
+  </class>
+
+  <class name="franka_example_controllers_cyh/CartesianPoseExampleController_cyh" 
+         type="franka_example_controllers_cyh::CartesianPoseExampleController_cyh" 
+         base_class_type="controller_interface::ControllerBase">
+    <description>
+      A controller that executes a short motion based on cartesian poses to demonstrate correct usage
+    </description>
+  </class>
+
+  <class name="franka_example_controllers_cyh/CartesianVelocityExampleController_cyh" 
+         type="franka_example_controllers_cyh::CartesianVelocityExampleController_cyh" 
+         base_class_type="controller_interface::ControllerBase">
+    <description>
+      A controller that executes a short motion based on cartesian velocities to demonstrate correct usage
+    </description>
+  </class>
+
+  <class name="franka_example_controllers_cyh/ModelExampleController_cyh" 
+    type="franka_example_controllers_cyh::ModelExampleController_cyh" 
+    base_class_type="controller_interface::ControllerBase">
+    <description>
+      A controller that evaluates and prints the dynamic model of Franka
+    </description>
+  </class>
+
+</library>

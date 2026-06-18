@@ -1,0 +1,14 @@
+{
+    "python.autoComplete.extraPaths": [
+        "/home/bf/work/myVS_ws/devel/lib/python3/dist-packages",
+        "/home/bf/VS2_ws/devel/lib/python3/dist-packages",
+        "/home/bf/VS_ws/devel/lib/python3/dist-packages",
+        "/opt/ros/noetic/lib/python3/dist-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/bf/work/myVS_ws/devel/lib/python3/dist-packages",
+        "/home/bf/VS2_ws/devel/lib/python3/dist-packages",
+        "/home/bf/VS_ws/devel/lib/python3/dist-packages",
+        "/opt/ros/noetic/lib/python3/dist-packages"
+    ]
+}
